@@ -7,7 +7,7 @@ conda env create -f environment.yml
 conda activate chicken-egg-counter
 ```
 
-## Fine-Tuning YOLOv8 for Chicken and Egg Detection
+## Fine-Tuning YOLO for Chicken and Egg Detection
 
 ```shell
 python fine_tune.py
