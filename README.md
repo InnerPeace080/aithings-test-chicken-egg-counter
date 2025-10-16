@@ -7,6 +7,12 @@ conda env create -f environment.yml
 conda activate chicken-egg-counter
 ```
 
+## Split Dataset
+
+```shell
+python split_data.py
+```
+
 ## Fine-Tuning YOLO for Chicken and Egg Detection
 
 ```shell
@@ -24,4 +30,5 @@ python -m onnxruntime.quantization.preprocess --input models/yolo_chicken_egg.on
 **Quantize the ONNX model:**
 
 ```shell
+python quantize.py
 ```
