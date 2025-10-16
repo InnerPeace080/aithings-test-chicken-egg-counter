@@ -1,4 +1,4 @@
-# YOLOv8n Chicken Egg Counter
+# YOLO Fine Tuning Chicken Egg Counter
 
 ## Setup
 
