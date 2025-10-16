@@ -1,0 +1,4 @@
+train: /media/Data/Codes/Python/aithings/chicken-egg-counter/data/train
+val: /media/Data/Codes/Python/aithings/chicken-egg-counter/data/test
+nc: 2  
+names: ["Chicken", "Egg"]  
