@@ -32,3 +32,17 @@ python -m onnxruntime.quantization.preprocess --input models/yolo_chicken_egg.on
 ```shell
 python quantize.py
 ```
+
+## Build cpp Code
+
+```shell
+pushd cpp
+make rebuild
+popd
+```
+
+## Rerun quantize.py
+
+```shell
+python quantize.py
+```

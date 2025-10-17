@@ -1,0 +1,40 @@
+===========Before quantization===========
+
+--- Evaluation Results ---
+Total GT boxes: 83
+Total Predicted boxes: 60
+True Positives: 55
+Number of class 0 detections: 32
+Number of class 1 detections: 23
+False Positives: 5
+False Negatives: 28
+Precision: 0.9167
+Recall: 0.6627
+F1-score: 0.7692
+
+===========After quantization===========
+
+--- Evaluation Results ---
+Total GT boxes: 83
+Total Predicted boxes: 57
+True Positives: 52
+Number of class 0 detections: 31
+Number of class 1 detections: 21
+False Positives: 5
+False Negatives: 31
+Precision: 0.9123
+Recall: 0.6265
+F1-score: 0.7429
+
+===========C++ Inference Evaluation===========
+
+Total Ground Truth Boxes: 83
+Total Predicted Boxes: 57
+True Positives: 53
+Number of Class 0 Detections: 32
+Number of Class 1 Detections: 21
+False Positives: 4
+False Negatives: 30
+Precision: 0.9298
+Recall: 0.6386
+F1 Score: 0.7571

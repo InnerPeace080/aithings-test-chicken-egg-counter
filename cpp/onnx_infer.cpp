@@ -64,7 +64,6 @@ int main(int argc, char *argv[]) {
   std::vector<float> input_tensor_values;
 
   // read image file, resize to 640x640, RBG, normalize to [0,1], convert to float32
-
   cv::Mat image           = cv::imread(input_image);
   cv::Mat original_image  = image.clone();
   int     original_width  = image.cols;
@@ -155,8 +154,8 @@ int main(int argc, char *argv[]) {
   std::vector<cv::Rect> boxes;
   std::vector<float>    scores;
   std::vector<int>      class_ids;
-  float                 conf_threshold = 0.1f;
-  float                 nms_threshold  = 0.0f;
+  float                 conf_threshold = 0.591f;
+  float                 nms_threshold  = 0.4f;
 
   int max_score = 0;
 
