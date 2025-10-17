@@ -134,9 +134,6 @@ int main(int argc, char *argv[]) {
             << " ms" << std::endl;
   start_time = std::chrono::high_resolution_clock::now();
 
-  // check input_tensor_values size
-  std::cout << "Input tensor values size: " << input_tensor_values.size() << std::endl;
-
   const auto  input_names       = session.GetInputNames();
   const char *input_name        = input_names[0].c_str();
   const auto  input_type_info   = session.GetInputTypeInfo(0);
@@ -183,9 +180,6 @@ int main(int argc, char *argv[]) {
   }
   std::cout << std::endl;
 
-  // output_data length
-  std::cout << "Output data length: " << output_tensor_info.GetElementCount() << std::endl;
-
   // output_data shape (1 6 8400)
   // Assume output_data is [1, 6, 8400]: [batch, attributes, num_boxes]
 
@@ -229,11 +223,6 @@ int main(int argc, char *argv[]) {
                    .count()
             << " ms" << std::endl;
   start_time = std::chrono::high_resolution_clock::now();
-
-  std::cout << "Max score (0-100): " << max_score << std::endl;
-
-  // length of class_ids and value
-  std::cout << "Length of class_ids: " << class_ids.size() << std::endl;
 
   std::vector<int> indices;
   cv::dnn::NMSBoxes(boxes, scores, conf_threshold, nms_threshold, indices);
