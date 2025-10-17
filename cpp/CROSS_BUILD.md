@@ -8,6 +8,8 @@ This document provides detailed instructions for cross-compiling the chicken-egg
 
 Cross-compilation allows you to build executables for Raspberry Pi on your development machine (macOS/Linux x86_64) without needing to compile directly on the target device. This is faster and more convenient for development workflows.
 
+**Important for macOS Users**: Cross-compilation on macOS is more complex than on Linux because macOS doesn't have readily available Linux cross-compilation toolchains. The recommended approach for macOS users is to use Docker (see Docker section below) or build natively on a Raspberry Pi.
+
 ## Prerequisites
 
 ### 1. Cross-Compilation Toolchain
@@ -21,8 +23,15 @@ Install the appropriate GCC cross-compiler for your target Raspberry Pi:
 sudo apt-get update
 sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
-# macOS (using Homebrew)
-brew install aarch64-elf-gcc
+# macOS - Option 1: Using Docker (Recommended)
+# Cross-compilation on macOS is complex. Use Docker for consistent results.
+# See Docker section below for setup instructions.
+
+# macOS - Option 2: Manual toolchain (Advanced users)
+# You can build a cross-compilation toolchain using crosstool-ng:
+# brew install crosstool-ng
+# ct-ng aarch64-unknown-linux-gnu
+# ct-ng build
 ```
 
 #### For 32-bit ARM (Raspberry Pi 3/4 with 32-bit OS)
@@ -32,8 +41,15 @@ brew install aarch64-elf-gcc
 sudo apt-get update
 sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
-# macOS (using Homebrew)
-brew install arm-none-eabi-gcc
+# macOS - Option 1: Using Docker (Recommended)
+# Cross-compilation on macOS is complex. Use Docker for consistent results.
+# See Docker section below for setup instructions.
+
+# macOS - Option 2: Manual toolchain (Advanced users)
+# You can build a cross-compilation toolchain using crosstool-ng:
+# brew install crosstool-ng
+# ct-ng arm-unknown-linux-gnueabihf
+# ct-ng build
 ```
 
 ### 2. ONNX Runtime for ARM
@@ -54,11 +70,60 @@ wget https://github.com/microsoft/onnxruntime/releases/download/v1.23.1/onnxrunt
 tar -xzf onnxruntime-linux-armhf-1.23.1.tgz
 ```
 
+## macOS Users: Recommended Approach
+
+Since cross-compilation toolchains for Linux targets are not readily available on macOS, we recommend one of these approaches:
+
+### Option 1: Docker (Recommended)
+
+Use Docker to create a Linux environment with cross-compilation tools:
+
+```bash
+# Create a Dockerfile in the cpp directory
+cat > Dockerfile << 'EOF'
+FROM ubuntu:20.04
+
+RUN apt-get update && apt-get install -y \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
+    gcc-arm-linux-gnueabihf \
+    g++-arm-linux-gnueabihf \
+    cmake \
+    make \
+    wget \
+    build-essential
+
+WORKDIR /build
+EOF
+
+# Build the Docker image
+docker build -t rpi-cross-build .
+
+# Run cross-compilation in container
+docker run --rm -v $(pwd):/build -w /build rpi-cross-build make rpi-cross CROSS_COMPILE=aarch64-linux-gnu-
+```
+
+### Option 2: Native Compilation on Raspberry Pi
+
+For simpler projects, you can compile directly on the Raspberry Pi:
+
+```bash
+# Copy source files to Raspberry Pi
+scp -r . pi@your-pi-ip:~/chicken-egg-counter/
+
+# SSH to Raspberry Pi and build
+ssh pi@your-pi-ip
+cd ~/chicken-egg-counter/cpp
+make rpi
+```
+
 ## Building Process
 
 ### Step 1: Build OpenCV (Cross-compiled)
 
 First, cross-compile OpenCV for the target platform:
+
+**Note**: The following commands work on Linux or in Docker containers. For macOS, use the Docker approach described above.
 
 **For 64-bit ARM:**
 
@@ -210,30 +275,68 @@ aarch64-linux-gnu-gcc --version
 - The ARM-specific compiler flags (`-march=armv7-a -mfpu=neon-vfpv4`) optimize for Raspberry Pi hardware
 - For best performance on Raspberry Pi 4/5, use the 64-bit toolchain and OS
 
-## Docker Alternative
+## Docker-based Cross-compilation (Recommended for macOS)
 
-For a more isolated build environment, consider using Docker:
+For a more isolated and consistent build environment, especially on macOS, use Docker:
+
+### Complete Docker Setup
+
+Create a comprehensive Dockerfile:
 
 ```dockerfile
 FROM ubuntu:20.04
 
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y \
     gcc-aarch64-linux-gnu \
     g++-aarch64-linux-gnu \
+    gcc-arm-linux-gnueabihf \
+    g++-arm-linux-gnueabihf \
     cmake \
     make \
-    wget
+    wget \
+    build-essential \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build/cpp
 COPY . .
 
-RUN make build-opencv-rpi CROSS_COMPILE=aarch64-linux-gnu-
-RUN make rpi-cross CROSS_COMPILE=aarch64-linux-gnu-
+# Download ONNX Runtime if not present
+RUN if [ ! -d "onnxruntime-linux-aarch64-1.23.1" ]; then \
+        wget https://github.com/microsoft/onnxruntime/releases/download/v1.23.1/onnxruntime-linux-aarch64-1.23.1.tgz && \
+        tar -xzf onnxruntime-linux-aarch64-1.23.1.tgz && \
+        rm onnxruntime-linux-aarch64-1.23.1.tgz; \
+    fi
 ```
 
-Build with Docker (run from project root):
+### Build Commands
 
 ```bash
+# Build Docker image (run from project root)
 docker build -f cpp/Dockerfile -t chicken-egg-cross .
-docker run --rm -v $(pwd)/output:/output chicken-egg-cross cp /build/cpp/onnx_infer_rpi /output/
+
+# Cross-compile for 64-bit ARM
+docker run --rm -v $(pwd)/cpp:/build/cpp -w /build/cpp chicken-egg-cross make rpi-cross CROSS_COMPILE=aarch64-linux-gnu-
+
+# Cross-compile for 32-bit ARM
+docker run --rm -v $(pwd)/cpp:/build/cpp -w /build/cpp chicken-egg-cross make rpi-cross CROSS_COMPILE=arm-linux-gnueabihf-
+
+# Copy built executable to host
+docker run --rm -v $(pwd)/output:/output -v $(pwd)/cpp:/build/cpp chicken-egg-cross cp /build/cpp/onnx_infer_rpi /output/
+```
+
+### One-liner for macOS Users
+
+```bash
+# Quick build for 64-bit ARM Raspberry Pi
+docker run --rm -v $(pwd)/cpp:/build -w /build ubuntu:20.04 bash -c "
+apt-get update && apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make cmake wget build-essential &&
+if [ ! -d 'onnxruntime-linux-aarch64-1.23.1' ]; then
+    wget https://github.com/microsoft/onnxruntime/releases/download/v1.23.1/onnxruntime-linux-aarch64-1.23.1.tgz &&
+    tar -xzf onnxruntime-linux-aarch64-1.23.1.tgz
+fi &&
+make rpi-cross CROSS_COMPILE=aarch64-linux-gnu-"
 ```
