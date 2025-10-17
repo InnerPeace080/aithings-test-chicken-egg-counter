@@ -179,34 +179,40 @@ rpi-docker:
 		apt-get install -y -qq build-essential cmake git wget && \
 		apt-get install -y -qq gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
 		apt-get install -y -qq libjpeg-dev libpng-dev libtiff-dev zlib1g-dev && \
-		echo '🧹 Cleaning previous builds...' && \
-		rm -rf opencv/build && \
-		echo '🔨 Building OpenCV for ARM64...' && \
-		cd opencv && mkdir -p build && cd build && \
-		cmake -DCMAKE_BUILD_TYPE=Release \
-			  -DCMAKE_INSTALL_PREFIX=. \
-			  -DCMAKE_SYSTEM_NAME=Linux \
-			  -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-			  -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-			  -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-			  -DCMAKE_C_FLAGS='-march=armv8-a' \
-			  -DCMAKE_CXX_FLAGS='-march=armv8-a' \
-			  -DBUILD_SHARED_LIBS=OFF \
-			  -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-			  -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-			  -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-			  -DBUILD_EXAMPLES=OFF \
-			  -DBUILD_TESTS=OFF \
-			  -DBUILD_PERF_TESTS=OFF \
-			  -DWITH_CUDA=OFF \
-			  -DWITH_GTK=OFF \
-			  -DWITH_QT=OFF \
-			  -DWITH_JPEG=ON \
-			  -DWITH_PNG=ON \
-			  -DWITH_TIFF=ON \
-			  -DENABLE_NEON=ON \
-			  .. && \
-		make -j\$$(nproc) && \
+		echo '🔍 Checking if OpenCV is already built...' && \
+		if [ -d 'opencv/build' ] && [ -f 'opencv/build/lib/libopencv_core.a' ]; then \
+			echo '✅ OpenCV already built, skipping rebuild'; \
+		else \
+			echo '🧹 Cleaning previous builds...' && \
+			rm -rf opencv/build && \
+			echo '🔨 Building OpenCV for ARM64...' && \
+			cd opencv && mkdir -p build && cd build && \
+			cmake -DCMAKE_BUILD_TYPE=Release \
+				  -DCMAKE_INSTALL_PREFIX=. \
+				  -DCMAKE_SYSTEM_NAME=Linux \
+				  -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+				  -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+				  -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+				  -DCMAKE_C_FLAGS='-march=armv8-a' \
+				  -DCMAKE_CXX_FLAGS='-march=armv8-a' \
+				  -DBUILD_SHARED_LIBS=OFF \
+				  -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+				  -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+				  -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+				  -DBUILD_EXAMPLES=OFF \
+				  -DBUILD_TESTS=OFF \
+				  -DBUILD_PERF_TESTS=OFF \
+				  -DWITH_CUDA=OFF \
+				  -DWITH_GTK=OFF \
+				  -DWITH_QT=OFF \
+				  -DWITH_JPEG=ON \
+				  -DWITH_PNG=ON \
+				  -DWITH_TIFF=ON \
+				  -DENABLE_NEON=ON \
+				  .. && \
+			make -j\$$(nproc) && \
+			echo '✅ OpenCV build completed'; \
+		fi && \
 		echo '🎯 Building application...' && \
 		cd /workspace && \
 		make all PLATFORM=RaspberryPi CROSS_COMPILE=aarch64-linux-gnu- && \
