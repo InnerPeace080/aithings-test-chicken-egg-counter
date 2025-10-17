@@ -106,24 +106,11 @@ int main(int argc, char *argv[]) {
             << " ms" << std::endl;
   start_time = std::chrono::high_resolution_clock::now();
 
-  // cv::imwrite("output_0.jpg", image);
   // check shape of image
   std::cout << "Image shape: " << image.cols << " " << image.rows << " " << image.channels() << std::endl;
-  // cv::imwrite("output_1.jpg", image);
   // convert HWC to CHW
-  // cv::dnn::blobFromImage(image, input_tensor_values, 1.0, cv::Size(640, 640), cv::Scalar(0, 0, 0), true, false);
   std::vector<cv::Mat> channels(3);
   cv::split(image, channels);
-
-  // write data to input_tensor_values and normalize to [0,1]
-  // cv::Mat chw;
-  // cv::vconcat(channels, chw);
-  // write chw to input_tensor_values and normalize to [0,1]
-  // check chw.total()
-  // std::cout << "CHW total: " << chw.total() << std::endl;
-  // // check chw shape
-  // std::cout << "CHW shape: " << chw.size() << std::endl;
-  // input_tensor_values.resize(chw.total());
 
   // copy channels to input_tensor_values one by one channel
   for (int c = 0; c < 3; ++c) {
