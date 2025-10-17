@@ -72,7 +72,7 @@ def analyze_onnx_model(model_path):
 
     # Handle dynamic shapes
     if any(dim is None or (isinstance(dim, str)) for dim in input_shape):
-        input_shape = [1, 1, 28, 28]  # MNIST default
+        input_shape = [1, 3, 640, 640]  # Default for YOLO
 
     dummy_input = np.random.randn(*input_shape).astype(np.float32)
 
@@ -102,5 +102,5 @@ def analyze_onnx_model(model_path):
     }
 
 
-model_info = analyze_onnx_model('./models/yolov8n_chicken_egg_infer.onnx')
+model_info = analyze_onnx_model('./models/yolo_chicken_egg_infer.quant.onnx')
 print(f"\n📋 Summary: {model_info}")

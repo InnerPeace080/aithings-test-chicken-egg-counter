@@ -30,11 +30,14 @@ test_dir = 'data/test'
 
 print("===========Before quantization===========\n")
 
-total_gt, total_pred, true_positive, false_positive, false_negative, precision, recall, f1_score = evaluate_model(ort_original_session)
+total_gt, total_pred, true_positive, number_cls_0, number_cls_1, false_positive, false_negative, precision, recall, f1_score = evaluate_model(
+    ort_original_session)
 print("\n--- Evaluation Results ---")
 print(f"Total GT boxes: {total_gt}")
 print(f"Total Predicted boxes: {total_pred}")
 print(f"True Positives: {true_positive}")
+print(f"Number of class 0 detections: {number_cls_0}")
+print(f"Number of class 1 detections: {number_cls_1}")
 print(f"False Positives: {false_positive}")
 print(f"False Negatives: {false_negative}")
 print(f"Precision: {precision:.4f}")
@@ -43,12 +46,15 @@ print(f"F1-score: {f1_score:.4f}")
 
 print("===========After quantization===========\n")
 
-total_gt, total_pred, true_positive, false_positive, false_negative, precision, recall, f1_score = evaluate_model(ort_session)
+total_gt, total_pred, true_positive, number_cls_0, number_cls_1, false_positive, false_negative, precision, recall, f1_score = evaluate_model(
+    ort_session)
 
 print("\n--- Evaluation Results ---")
 print(f"Total GT boxes: {total_gt}")
 print(f"Total Predicted boxes: {total_pred}")
 print(f"True Positives: {true_positive}")
+print(f"Number of class 0 detections: {number_cls_0}")
+print(f"Number of class 1 detections: {number_cls_1}")
 print(f"False Positives: {false_positive}")
 print(f"False Negatives: {false_negative}")
 print(f"Precision: {precision:.4f}")
