@@ -5,6 +5,10 @@ COMPILER = g++
 ifdef CROSS_COMPILE
 	COMPILER = $(CROSS_COMPILE)g++
 	PKG_CONFIG = $(CROSS_COMPILE)pkg-config
+	# If cross-compiling with aarch64, default to RaspberryPi platform
+	ifeq ($(findstring aarch64,$(CROSS_COMPILE)),aarch64)
+		PLATFORM ?= RaspberryPi
+	endif
 else
 	PKG_CONFIG = pkg-config
 endif
@@ -125,7 +129,11 @@ build-opencv-native:
 
 $(TARGET): $(SRC)
 	@echo "Building $(TARGET) for $(PLATFORM)..."
+ifeq ($(PLATFORM),RaspberryPi)
+	$(COMPILER) $^ -o $@ $(INCLUDE) $(LIB) $(OPENCV_3RDPARTY_LIBS) $(ADDITIONAL_FLAGS) $(RPATH) $(STATIC_LINK_FLAGS)
+else
 	$(COMPILER) $^ -o $@ $(INCLUDE) $(LIB) $(ADDITIONAL_FLAGS) $(RPATH)
+endif
 
 # Test the build
 test: $(TARGET)
@@ -201,13 +209,7 @@ rpi-docker:
 		make -j\$$(nproc) && \
 		echo '🎯 Building application...' && \
 		cd /workspace && \
-		aarch64-linux-gnu-g++ onnx_infer.cpp -o onnx_infer_rpi \
-				$(INCLUDE) \
-				$(LIB) \
-				$(OPENCV_3RDPARTY_LIBS) \
-				$(ADDITIONAL_FLAGS) \
-				$(RPATH) \
-				$(STATIC_LINK_FLAGS) && \
+		make all PLATFORM=RaspberryPi CROSS_COMPILE=aarch64-linux-gnu- && \
 		echo '✅ Build completed successfully!' && \
 		echo '📁 Output: onnx_infer_rpi' \
 	"
