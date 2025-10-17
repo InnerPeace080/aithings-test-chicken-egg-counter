@@ -52,8 +52,19 @@ int main(int argc, char *argv[]) {
   Ort::Env            env(ORT_LOGGING_LEVEL_WARNING, "test");
   Ort::SessionOptions session_options;
 
+  // trace process time
+  auto start_time = std::chrono::high_resolution_clock::now();
+
   const std::string exe_path = get_executable_dir();
   Ort::Session      session(env, (exe_path + "/../models/yolo_chicken_egg_infer.quant.onnx").c_str(), session_options);
+
+  // time to load model
+  std::cout << "Model loaded in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
 
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " <input_image>" << std::endl;
@@ -64,13 +75,28 @@ int main(int argc, char *argv[]) {
   std::vector<float> input_tensor_values;
 
   // read image file, resize to 640x640, RBG, normalize to [0,1], convert to float32
-  cv::Mat image           = cv::imread(input_image);
+  cv::Mat image = cv::imread(input_image);
+
+  std::cout << "Image read in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
+
   cv::Mat original_image  = image.clone();
   int     original_width  = image.cols;
   int     original_height = image.rows;
 
   cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
   cv::resize(image, image, cv::Size(640, 640));
+
+  std::cout << "Image preprocessed in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
 
   // cv::imwrite("output_0.jpg", image);
   // check shape of image
@@ -101,6 +127,13 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  std::cout << "Image converted to tensor in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
+
   // check input_tensor_values size
   std::cout << "Input tensor values size: " << input_tensor_values.size() << std::endl;
 
@@ -126,9 +159,24 @@ int main(int argc, char *argv[]) {
   // write input_tensor_values data to input_tensor_data
   std::memcpy(input_tensor_data, input_tensor_values.data(), input_tensor_values.size() * sizeof(float));
 
-  auto       output_tensors = session.Run(Ort::RunOptions{nullptr}, &input_name, &input_tensor, 1, &output_name, 1);
-  float     *output_data    = output_tensors.front().GetTensorMutableData<float>();
-  const auto output_shape   = output_tensor_info.GetShape();
+  std::cout << "Input tensor created in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
+
+  auto output_tensors = session.Run(Ort::RunOptions{nullptr}, &input_name, &input_tensor, 1, &output_name, 1);
+
+  std::cout << "Inference done in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
+
+  float     *output_data  = output_tensors.front().GetTensorMutableData<float>();
+  const auto output_shape = output_tensor_info.GetShape();
   std::cout << "Output shape: ";
   for (const auto &dim : output_shape) {
     std::cout << dim << " ";
@@ -174,6 +222,14 @@ int main(int argc, char *argv[]) {
     scores.push_back(score);
     class_ids.push_back(conf_cls0 > conf_cls1 ? 0 : 1);
   }
+
+  std::cout << "Boxes and scores extracted in "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
+                                                                     start_time)
+                   .count()
+            << " ms" << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
+
   std::cout << "Max score (0-100): " << max_score << std::endl;
 
   // length of class_ids and value
