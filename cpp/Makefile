@@ -163,22 +163,19 @@ rpi-native:
 
 # Build for Raspberry Pi using Docker (MAIN TARGET)
 rpi-docker:
-	@echo "Building for Raspberry Pi using Docker with compatible glibc..."
+	@echo "Building for Raspberry Pi using Docker with build cache..."
 	@if ! command -v docker >/dev/null 2>&1; then \
 		echo "❌ Docker not found. Please install Docker first:"; \
 		echo "   sudo apt update && sudo apt install docker.io"; \
 		echo "   sudo usermod -aG docker $$USER  # Then logout and login"; \
 		exit 1; \
 	fi
-	@echo "🐳 Starting Docker build with Debian 11 (glibc 2.31)..."
+	@echo "🐳 Building Docker environment (dependencies cached)..."
+	docker build -f Dockerfile.rpi -t rpi-cross-compiler:local .
+	@echo "� Running build in cached environment..."
 	docker run --rm -v $(PWD):/workspace -w /workspace \
-		debian:11 /bin/bash -c " \
+		rpi-cross-compiler:local /bin/bash -c " \
 		set -e && \
-		echo '📦 Installing build dependencies...' && \
-		apt-get update -qq && \
-		apt-get install -y -qq build-essential cmake git wget && \
-		apt-get install -y -qq gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
-		apt-get install -y -qq libjpeg-dev libpng-dev libtiff-dev zlib1g-dev && \
 		echo '🔍 Checking if OpenCV is already built...' && \
 		if [ -d 'opencv/build' ] && [ -f 'opencv/build/lib/libopencv_core.a' ]; then \
 			echo '✅ OpenCV already built, skipping rebuild'; \
@@ -219,7 +216,6 @@ rpi-docker:
 		echo '✅ Build completed successfully!' && \
 		echo '📁 Output: onnx_infer_rpi' \
 	"
-
 
 
 # Check Docker availability
@@ -282,7 +278,7 @@ help:
 	@echo "=============================================="
 	@echo ""
 	@echo "📋 Main Targets:"
-	@echo "  rpi-docker         🐳 Cross-compile for Raspberry Pi in Docker (RECOMMENDED)"
+	@echo "  rpi-docker         🐳 Cross-compile for Raspberry Pi with Docker cache (RECOMMENDED)"
 	@echo "  rpi-native         🏠 Build natively on Raspberry Pi"
 	@echo "  all                💻 Build for current platform (x86_64/local dev)"
 	@echo ""
@@ -299,12 +295,12 @@ help:
 	@echo "  2. make rpi-docker                # Build for Raspberry Pi"
 	@echo "  3. Copy onnx_infer_rpi to your Pi # Deploy the binary"
 	@echo ""
-	@echo "✨ Why Docker-only cross-compilation?"
+	@echo "✨ Docker Build Cache Benefits:"
+	@echo "  ⚡ Dependencies cached in Docker image - installed once per Dockerfile change"
+	@echo "  🔨 OpenCV cached on filesystem - rebuilds only when needed"
+	@echo "  🎯 Application always fresh - quick rebuilds for code changes"
+	@echo "  🚀 Subsequent builds: ~1 minute instead of 15+ minutes"
 	@echo "  ✅ Consistent build environment (Debian 11, glibc 2.31)"
-	@echo "  ✅ No complex local ARM64 library setup required"
-	@echo "  ✅ Handles all dependencies automatically"
-	@echo "  ✅ Avoids glibc version conflicts"
-	@echo "  ✅ Reproducible builds across different host systems"
 	@echo ""
 	@echo "📋 Prerequisites:"
 	@echo "  • Docker installed and running"

@@ -1,0 +1,24 @@
+# Exclude build outputs
+onnx_infer_linux
+onnx_infer_mac
+onnx_infer_rpi
+
+# Exclude other platforms' ONNX Runtime (not needed for Docker environment)
+onnxruntime-linux-x64-1.23.1/
+onnxruntime-osx-arm64-1.23.1/
+
+# Exclude documentation
+*.md
+README*
+
+# Exclude git and other metadata
+.git/
+.gitignore
+
+# Exclude everything else since we only need the environment
+# All files will be mounted at runtime
+opencv/
+onnx_infer.cpp
+Makefile
+models/
+data/

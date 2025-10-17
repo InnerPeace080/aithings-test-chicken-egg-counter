@@ -1,0 +1,16 @@
+# Dockerfile for Raspberry Pi cross-compilation environment
+# Only caches apt-get dependencies for faster builds
+FROM debian:11
+
+# Install build dependencies (this layer will be cached)
+RUN apt-get update -qq && \
+  apt-get install -y -qq build-essential cmake git wget && \
+  apt-get install -y -qq gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
+  apt-get install -y -qq libjpeg-dev libpng-dev libtiff-dev zlib1g-dev && \
+  rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Environment ready - all build logic will be handled by Makefile
+CMD ["/bin/bash"]
