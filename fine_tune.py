@@ -53,8 +53,6 @@ device, recommended_batch_size = get_device_and_batch_size()
 
 model = YOLO("yolo11n.pt")  # load a pretrained model (recommended for training)
 
-logging.info(f"Model loaded: {model}")
-
 # remove existing runs directory if it exists
 if os.path.exists("runs"):
     shutil.rmtree("runs")
@@ -88,6 +86,9 @@ try:
     model.export(format="onnx")
     logging.info("Model exported successfully!")
 
+    # copy best model to `models/yolo_chicken_egg.onnx`
+    shutil.copy("runs/detect/train/weights/best.onnx", "models/yolo_chicken_egg.onnx")
+
 except RuntimeError as e:
     if "out of memory" in str(e).lower():
         logging.error("GPU out of memory! Trying with smaller batch size...")
@@ -102,6 +103,7 @@ except RuntimeError as e:
             batch=smaller_batch,
             device=device,
         )
+
     else:
         logging.error(f"Training failed with error: {e}")
         # Try fallback to CPU if GPU fails
@@ -116,6 +118,19 @@ except RuntimeError as e:
             )
         else:
             raise e
+
+    logging.info("Training completed successfully!")
+
+    metrics = model.val()  # evaluate model performance on validation set
+    logging.info(f"Validation metrics: {metrics}")
+
+    # export to onnx file
+    logging.info("Exporting model to ONNX format...")
+    model.export(format="onnx")
+    logging.info("Model exported successfully!")
+
+    # copy best model to `models/yolo_chicken_egg.onnx`
+    shutil.copy("runs/detect/train/weights/best.onnx", "models/yolo_chicken_egg.onnx")
 
 except Exception as e:
     logging.error(f"Unexpected error during training: {e}")
