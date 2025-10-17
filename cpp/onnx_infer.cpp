@@ -52,6 +52,14 @@ int main(int argc, char *argv[]) {
   Ort::Env            env(ORT_LOGGING_LEVEL_WARNING, "test");
   Ort::SessionOptions session_options;
 
+  // List available providers for debugging
+  auto available_providers = Ort::GetAvailableProviders();
+  std::cout << "Available execution providers: ";
+  for (const auto &provider : available_providers) {
+    std::cout << provider << " ";
+  }
+  std::cout << std::endl;
+
   // trace process time
   auto start_time = std::chrono::high_resolution_clock::now();
 
