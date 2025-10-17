@@ -81,16 +81,19 @@ all: check-opencv $(TARGET)
 # Check if OpenCV is built (for native builds only)
 check-opencv:
 ifeq ($(PLATFORM),Linux)
+	@echo "Checking OpenCV build for Linux..."
 	@if [ ! -d "$(OPENCV_BUILD_DIR)" ] || [ ! -f "$(OPENCV_LIB_DIR)/libopencv_core.so" ]; then \
 		echo "OpenCV not found. Build with 'make build-opencv-native' or use 'make rpi-docker' for Raspberry Pi"; \
 		exit 1; \
 	fi
 else ifeq ($(PLATFORM),Darwin)
+	@echo "Checking OpenCV build for macOS..."
 	@if [ ! -d "$(OPENCV_BUILD_DIR)" ] || [ ! -f "$(OPENCV_LIB_DIR)/libopencv_core.dylib" ]; then \
 		echo "OpenCV not found. Build with 'make build-opencv-native'"; \
 		exit 1; \
 	fi
 else ifeq ($(PLATFORM),RaspberryPi)
+	@echo "Checking OpenCV build for Raspberry Pi..."
 	@if [ ! -d "$(OPENCV_BUILD_DIR)" ]; then \
 		echo "OpenCV build directory not found. Use 'make rpi-docker' to build"; \
 		exit 1; \
