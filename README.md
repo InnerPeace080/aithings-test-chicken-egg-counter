@@ -21,8 +21,10 @@ python split_data.py
 
 ## Fine-Tuning YOLO for Chicken and Egg Detection
 
+`PYTORCH_ENABLE_MPS_FALLBACK=1` is env variable for Mac silicon GPU support.
+
 ```shell
-python fine_tune.py
+PYTORCH_ENABLE_MPS_FALLBACK=1 python fine_tune.py
 ```
 
 ## Quantizing the Model
