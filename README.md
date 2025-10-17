@@ -2,6 +2,12 @@
 
 ## Setup
 
+clone the repository with submodules
+
+```shell
+git clone --recurse-submodules <repository_url>
+```
+
 ```shell
 conda env create -f environment.yml
 conda activate chicken-egg-counter
