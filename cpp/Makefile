@@ -43,10 +43,17 @@ all: check-opencv $(TARGET)
 
 # Check if OpenCV is built
 check-opencv:
+ifeq ($(UNAME_S),Linux)
 	@if [ ! -d "$(OPENCV_BUILD_DIR)" ] || [ ! -f "$(OPENCV_LIB_DIR)/libopencv_core.so" ]; then \
 		echo "OpenCV not found or not built. Please build OpenCV first with 'make build-opencv'"; \
 		exit 1; \
 	fi
+else ifeq ($(UNAME_S),Darwin)
+	@if [ ! -d "$(OPENCV_BUILD_DIR)" ] || [ ! -f "$(OPENCV_LIB_DIR)/libopencv_core.dylib" ]; then \
+		echo "OpenCV not found or not built. Please build OpenCV first with 'make build-opencv'"; \
+		exit 1; \
+	fi
+endif
 
 # Build OpenCV (if needed)
 build-opencv:
@@ -59,7 +66,7 @@ build-opencv:
 		  -DBUILD_PERF_TESTS=OFF \
 		  -DWITH_CUDA=OFF \
 		  .. && \
-	make -j$(shell nproc 2>/dev/null || echo 4)
+	make -j$(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
 $(TARGET): $(SRC)
 	$(COMPILER) $^ -o $@ $(INCLUDE) $(LIB) $(ADDITIONAL_FLAGS) $(RPATH)
@@ -67,7 +74,11 @@ $(TARGET): $(SRC)
 # Test the build
 test: $(TARGET)
 	@echo "Testing if the executable can find libraries..."
-	@ldd ./$(TARGET) || otool -L ./$(TARGET)
+ifeq ($(UNAME_S),Linux)
+	@ldd ./$(TARGET)
+else ifeq ($(UNAME_S),Darwin)
+	@otool -L ./$(TARGET)
+endif
 
 clean:
 	rm -f $(TARGET)

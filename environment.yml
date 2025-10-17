@@ -10,5 +10,5 @@ dependencies:
   - onnx
   - onnxruntime
   - ultralytics=8.3.214
-  - torchvision
-  - opencv
+  - torchvision=0.20.1
+  - opencv=4.10.0
