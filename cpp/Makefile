@@ -173,7 +173,7 @@ rpi-docker:
 	@echo "🐳 Building Docker environment (dependencies cached)..."
 	docker build -f Dockerfile.rpi -t rpi-cross-compiler:local .
 	@echo "� Running build in cached environment..."
-	docker run --rm -v $(PWD):/workspace -w /workspace \
+	docker run --rm -u $(shell id -u):$(shell id -g) -v $(PWD):/workspace -w /workspace \
 		rpi-cross-compiler:local /bin/bash -c " \
 		set -e && \
 		echo '🔍 Checking if OpenCV is already built...' && \
